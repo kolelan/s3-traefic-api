@@ -1,0 +1,41 @@
+services:
+  # Хранилище файлов (S3-совместимое)
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: admin      # Логин для MinIO
+      MINIO_ROOT_PASSWORD: password123
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Web UI (управление)
+
+  # CDN и обратный прокси
+  traefik:
+    image: traefik:v2.10
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
+    ports:
+      - "80:80"       # HTTP
+      - "8080:8080"   # Dashboard (http://localhost:8080)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Бэкенд (FastAPI)
+  api:
+    build: ./api  # Папка с Dockerfile для API
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: password123
+      MINIO_BUCKET: files
+    labels:
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+
+volumes:
+  minio_data:
