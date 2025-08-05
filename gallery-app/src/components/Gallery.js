@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GLightbox from 'glightbox';
 import 'glightbox/dist/css/glightbox.min.css';
 
@@ -14,10 +14,12 @@ const Gallery = () => {
   const [hideDuplicates, setHideDuplicates] = useState(false);
   const [fileTypes, setFileTypes] = useState({});
   const [enabledFileTypes, setEnabledFileTypes] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const lightboxRef = useRef(null);
 
   // Initialize lightbox
   useEffect(() => {
-    GLightbox({
+    lightboxRef.current = GLightbox({
       selector: '.glightbox',
       touchNavigation: true,
       loop: true,
@@ -25,6 +27,19 @@ const Gallery = () => {
       closeEffect: 'zoom',
       zoomable: true
     });
+
+    return () => {
+      if (lightboxRef.current) {
+        lightboxRef.current.destroy();
+      }
+    };
+  }, []);
+
+  // Reload lightbox when files change
+  useEffect(() => {
+    if (lightboxRef.current) {
+      lightboxRef.current.reload();
+    }
   }, [files]);
 
   // Load data from report.json and analyze file types
@@ -69,6 +84,16 @@ const Gallery = () => {
   const isImage = (file) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(file);
   const formatDate = (dateString) => new Date(dateString).toLocaleString();
 
+  // Format URL for display with word breaks
+  const formatUrl = (url) => {
+    return url.split(/([\/_])/).map((part, i) => (
+      <React.Fragment key={i}>
+        {part}
+        {(part === '/' || part === '_') && <wbr />}
+      </React.Fragment>
+    ));
+  };
+
   // Toggle file type
   const toggleFileType = (ext) => {
     setEnabledFileTypes(prev => ({
@@ -80,6 +105,15 @@ const Gallery = () => {
   // Filter and process files
   const getFilteredFiles = () => {
     let filtered = [...files];
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(file =>
+        file.file.toLowerCase().includes(query) ||
+        file.link.toLowerCase().includes(query)
+      );
+    }
 
     // Filter by enabled file types
     filtered = filtered.filter(file => {
@@ -135,30 +169,33 @@ const Gallery = () => {
             {filteredFiles.map((item, index) => {
               const fileName = getFileName(item.file);
               const fileNameWithoutExt = getFileNameWithoutExt(item.file);
+              const isImg = isImage(item.file);
 
               return (
                 <div key={`${item.hash}-${index}`} className="gallery-item">
-                  {isImage(item.file) ? (
-                    <a
-                      href={item.link}
-                      className="glightbox"
-                      data-glightbox={`title: ${showNames ? fileName : ''}; description: ${
-                        showDates ? `Uploaded: ${formatDate(item.date)}` : ''
-                      } ${showLinks ? `Link: ${item.link}` : ''}`}
-                    >
-                      <img src={item.link} alt={fileName} loading="lazy" />
-                      <div className="caption">
-                        {showNames && <h3>{fileName}</h3>}
-                        {showDates && <p>{formatDate(item.date)}</p>}
-                        {showLinks && (
-                          <p className="file-link">
-                            <div className="file-link-text">
-                              {item.link}
-                            </div>
-                          </p>
-                        )}
-                      </div>
-                    </a>
+                  {isImg ? (
+                    <>
+                      <a
+                        href={item.link}
+                        className="glightbox"
+                        data-glightbox={`title: ${showNames ? fileName : ''}; description: ${
+                          showDates ? `Uploaded: ${formatDate(item.date)}` : ''
+                        } ${showLinks ? `<a href="${item.link}" download="${fileName}" style="color: #4a6baf; text-decoration: underline;">${item.link}</a>` : ''}`}
+                      >
+                        <img src={item.link} alt={fileName} loading="lazy" />
+                        <div className="caption">
+                          {showNames && <h3>{fileName}</h3>}
+                          {showDates && <p>{formatDate(item.date)}</p>}
+                          {showLinks && (
+                            <p className="file-link">
+                              <a href={item.link} download={fileName}>
+                                {formatUrl(item.link)}
+                              </a>
+                            </p>
+                          )}
+                        </div>
+                      </a>
+                    </>
                   ) : (
                     <a href={item.link} target="_blank" rel="noopener noreferrer">
                       <div className="file-icon">📄</div>
@@ -167,9 +204,9 @@ const Gallery = () => {
                         {showDates && <p>{formatDate(item.date)}</p>}
                         {showLinks && (
                           <p className="file-link">
-                            <div className="file-link-text">
-                              {item.link}
-                            </div>
+                            <a href={item.link} target="_blank" rel="noopener noreferrer">
+                              {formatUrl(item.link)}
+                            </a>
                           </p>
                         )}
                       </div>
@@ -184,6 +221,20 @@ const Gallery = () => {
 
       <div className="controls-panel">
         <h2>Display Options</h2>
+
+        <div className="control-group">
+          <label>
+            Search:
+            <input
+              type="text"
+              placeholder="Filter by file path..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </label>
+        </div>
+
         <div className="control-group">
           <label>
             <input
