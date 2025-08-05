@@ -1,0 +1,65 @@
+[
+    {
+        "file": "./dataToSend\\image_programming_sed.jpg",
+        "link": "http://localhost:9000/files/image_programming_sed.jpg",
+        "hash": "a575a36e4992a2b4",
+        "s3code": "image_programming_sed.jpg",
+        "date": "2025-08-05T16:39:32.758200"
+    },
+    {
+        "file": "./dataToSend\\image_programming_sed.png",
+        "link": "http://localhost:9000/files/image_programming_sed.png",
+        "hash": "eb76ed240981da6d",
+        "s3code": "image_programming_sed.png",
+        "date": "2025-08-05T16:39:32.840713"
+    },
+    {
+        "file": "./dataToSend\\kuber_programmer.jpg",
+        "link": "http://localhost:9000/files/kuber_programmer.jpg",
+        "hash": "ffd917ce37560285",
+        "s3code": "kuber_programmer.jpg",
+        "date": "2025-08-05T16:39:32.867974"
+    },
+    {
+        "file": "./dataToSend\\test.txt",
+        "link": "http://localhost:9000/files/test.txt",
+        "hash": "42eca1cb412cdc68",
+        "s3code": "test.txt",
+        "date": "2025-08-05T16:39:32.938022"
+    },
+    {
+        "file": "./dataToSend\\subfolder\\kuber_programmer.png",
+        "link": "http://localhost:9000/files/subfolder/kuber_programmer.png",
+        "hash": "511c40de787c8364",
+        "s3code": "subfolder/kuber_programmer.png",
+        "date": "2025-08-05T16:39:32.983093"
+    },
+    {
+        "file": "./dataToSend\\subfolder\\othe-textt.txt",
+        "link": "http://localhost:9000/files/subfolder/othe-textt.txt",
+        "hash": "4847446d0e6cb634",
+        "s3code": "subfolder/othe-textt.txt",
+        "date": "2025-08-05T16:39:33.045058"
+    },
+    {
+        "file": "./dataToSend\\subfolder\\programmer_want_to_create.jpg",
+        "link": "http://localhost:9000/files/subfolder/programmer_want_to_create.jpg",
+        "hash": "3d767be700308654",
+        "s3code": "subfolder/programmer_want_to_create.jpg",
+        "date": "2025-08-05T16:39:33.124414"
+    },
+    {
+        "file": "./dataToSend\\subfolder\\programmer_want_to_create.png",
+        "link": "http://localhost:9000/files/subfolder/programmer_want_to_create.png",
+        "hash": "c1986eef38e2334c",
+        "s3code": "subfolder/programmer_want_to_create.png",
+        "date": "2025-08-05T16:39:33.206217"
+    },
+    {
+        "file": "./dataToSend\\subfolder\\want_to_react.png",
+        "link": "http://localhost:9000/files/subfolder/want_to_react.png",
+        "hash": "c820e60fd57d0182",
+        "s3code": "subfolder/want_to_react.png",
+        "date": "2025-08-05T16:39:33.290001"
+    }
+]
