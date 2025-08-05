@@ -11,8 +11,9 @@ const Gallery = () => {
   const [showNames, setShowNames] = useState(true);
   const [showDates, setShowDates] = useState(true);
   const [showLinks, setShowLinks] = useState(false);
-  const [onlyImages, setOnlyImages] = useState(false);
   const [hideDuplicates, setHideDuplicates] = useState(false);
+  const [fileTypes, setFileTypes] = useState({});
+  const [enabledFileTypes, setEnabledFileTypes] = useState({});
 
   // Initialize lightbox
   useEffect(() => {
@@ -26,7 +27,7 @@ const Gallery = () => {
     });
   }, [files]);
 
-  // Load data from report.json
+  // Load data from report.json and analyze file types
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -36,6 +37,22 @@ const Gallery = () => {
         }
         const data = await response.json();
         setFiles(data);
+
+        // Analyze file extensions
+        const types = {};
+        data.forEach(file => {
+          const ext = file.file.split('.').pop().toLowerCase();
+          types[ext] = (types[ext] || 0) + 1;
+        });
+
+        setFileTypes(types);
+
+        // Enable all file types by default
+        const enabled = {};
+        Object.keys(types).forEach(ext => {
+          enabled[ext] = true;
+        });
+        setEnabledFileTypes(enabled);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -52,13 +69,23 @@ const Gallery = () => {
   const isImage = (file) => /\.(jpe?g|png|gif|bmp|webp)$/i.test(file);
   const formatDate = (dateString) => new Date(dateString).toLocaleString();
 
+  // Toggle file type
+  const toggleFileType = (ext) => {
+    setEnabledFileTypes(prev => ({
+      ...prev,
+      [ext]: !prev[ext]
+    }));
+  };
+
   // Filter and process files
   const getFilteredFiles = () => {
     let filtered = [...files];
 
-    if (onlyImages) {
-      filtered = filtered.filter(file => isImage(file.file));
-    }
+    // Filter by enabled file types
+    filtered = filtered.filter(file => {
+      const ext = file.file.split('.').pop().toLowerCase();
+      return enabledFileTypes[ext];
+    });
 
     if (hideDuplicates) {
       const seenNames = new Set();
@@ -125,9 +152,9 @@ const Gallery = () => {
                         {showDates && <p>{formatDate(item.date)}</p>}
                         {showLinks && (
                           <p className="file-link">
-                            <a href={item.link} target="_blank" rel="noopener noreferrer">
+                            <div className="file-link-text">
                               {item.link}
-                            </a>
+                            </div>
                           </p>
                         )}
                       </div>
@@ -140,9 +167,9 @@ const Gallery = () => {
                         {showDates && <p>{formatDate(item.date)}</p>}
                         {showLinks && (
                           <p className="file-link">
-                            <a href={item.link} target="_blank" rel="noopener noreferrer">
+                            <div className="file-link-text">
                               {item.link}
-                            </a>
+                            </div>
                           </p>
                         )}
                       </div>
@@ -191,22 +218,26 @@ const Gallery = () => {
           <label>
             <input
               type="checkbox"
-              checked={onlyImages}
-              onChange={() => setOnlyImages(!onlyImages)}
-            />
-            Show only images
-          </label>
-        </div>
-        <div className="control-group">
-          <label>
-            <input
-              type="checkbox"
               checked={hideDuplicates}
               onChange={() => setHideDuplicates(!hideDuplicates)}
             />
             Hide duplicate names (without extension)
           </label>
         </div>
+
+        <h3>File Types</h3>
+        {Object.keys(fileTypes).map(ext => (
+          <div className="control-group" key={ext}>
+            <label>
+              <input
+                type="checkbox"
+                checked={enabledFileTypes[ext] || false}
+                onChange={() => toggleFileType(ext)}
+              />
+              {`.${ext} (${fileTypes[ext]})`}
+            </label>
+          </div>
+        ))}
 
         <div className="stats">
           <p>Showing: {filteredFiles.length} of {files.length} files</p>
